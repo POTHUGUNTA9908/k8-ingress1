@@ -1,24 +1,92 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: app1
+#   labels:
+#     app: app1
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: app1
+#   template:
+#     metadata:
+#       labels:
+#         app: app1
+#     spec:
+#       containers:
+#         - name: app1
+#           image: pothugunta/app1:1.0.0
+#           ports:
+#             - containerPort: 80
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: app1
+# spec:
+#   selector:
+#     app: app1
+#   ports:
+#     - protocol: TCP
+#       port: 80
+#       targetPort: 80
+
+
+
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: minimal-ingress
+#   annotations:
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/ip-address-type: dualstack
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+#     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:258180561417:certificate/c068eb32-b327-43c7-a92d-a957b2eedd95
+#     alb.ingress.kubernetes.io/group.name: pothugunta
+# spec:
+#   ingressClassName: alb
+#   rules:
+#   - host: "app1.daws-79.shop"
+#     http:
+#       paths:
+#       - pathType: Prefix
+#         path: "/"
+#         backend:
+#           service:
+#             name: app1
+#             port:
+#               number: 80
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: app1
+  # these labels are replicaset labels
   labels:
-    app: app1
+    project: roboshop
+    tier: frontend
+    component: app1
 spec:
   replicas: 2
   selector:
+    # using these labels replica set selects the pod
     matchLabels:
-      app: app1
+      project: roboshop
+      tier: frontend
+      component: app1
+  # This is pod definition, pod is subset of replicaset
   template:
     metadata:
       labels:
-        app: app1
+        project: roboshop
+        tier: frontend
+        component: app1
     spec:
       containers:
-        - name: app1
-          image: pothugunta/app1:1.0.0
-          ports:
-            - containerPort: 80
+      - name: app1
+        image: pothugunta/app1:1.0.0
 ---
 apiVersion: v1
 kind: Service
@@ -26,29 +94,29 @@ metadata:
   name: app1
 spec:
   selector:
-    app: app1
+    # labels are used as selectors
+    project: roboshop
+    tier: frontend
+    component: app1
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-
-
-
+  - protocol: TCP
+    port: 80 # servie port
+    targetPort: 80 # container port
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: minimal-ingress
+  name: app1
   annotations:
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/ip-address-type: dualstack
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:258180561417:certificate/c068eb32-b327-43c7-a92d-a957b2eedd95
-    alb.ingress.kubernetes.io/group.name: pothugunta
+    alb.ingress.kubernetes.io/tags: Environment=dev,Project=roboshop
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: roboshop
 spec:
   ingressClassName: alb
   rules:
-  - host: "app1.daws-79.shop"
+  - host: "app1.daws88s.online"
     http:
       paths:
       - pathType: Prefix
