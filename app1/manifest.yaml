@@ -31,3 +31,30 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
+
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ip-address-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:258180561417:certificate/c068eb32-b327-43c7-a92d-a957b2eedd95
+    alb.ingress.kubernetes.io/group.name: pothugunta
+spec:
+  ingressClassName: alb
+  rules:
+  - host: "app1.daws-79.shop"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: app1
+            port:
+              number: 80
